@@ -182,7 +182,7 @@ class App extends Component {
                       })
                     return (
                         <Animated.View
-                        key={card.name}
+                        key={card.key}
                         style= {{ transform: [{ translateY }]}}
                         >
                             <View  style={styles.card}>
