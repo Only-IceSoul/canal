@@ -133,8 +133,6 @@ class App extends Component {
         { this.state.preview ? 
          <Preview style={{position: 'absolute' ,width:cw, height: hs , left: 0, top: 0}} image={this.state.preview} 
           close={()=>{ 
-            this.lastTransCX = 0
-            this.lastTransCY = 0
             this.setState((old) => ( { preview: null
           }) )}}  /> : null
         }
@@ -147,7 +145,8 @@ class App extends Component {
                   </Animated.View>
 
                   <PanGestureHandler 
-                  onGestureEvent={this.handleCropGesture}>
+                  onGestureEvent={this.handleCropGesture}
+                  onHandlerStateChange={this.handleCropState}>
                       <Animated.View style={{ width:100,height:100, transform: [ { translateY: this.state.transCropY }, {  translateX: this.state.transCropX}] }}>
                           <View style={{...styles.crop}} />
                       </Animated.View>
