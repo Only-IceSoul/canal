@@ -13,7 +13,7 @@ const cw = Dimensions.get("window").width
 
 const preview = (props)=> (
 
-    <View>
+    <View style={props.style}>
         <Image style={styles.image} source={{ uri: `data:image/jpeg;base64,${props.image}`}} resizeMode={'contain'}/>
 
         <TapGestureHandler onHandlerStateChange={({nativeEvent}) => {
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
         justifyContent:'center',
         alignItems: 'center',
         alignSelf:'center',
-        marginTop: 30
+        marginTop: 20
       },
       text: {
         fontSize: 15,
