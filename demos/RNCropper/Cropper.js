@@ -37,7 +37,10 @@ class App extends Component {
       transCropX: new Animated.Value(0),
       transCropY: new Animated.Value(0),
       rotate: new Animated.Value(0),
-      scale : new Animated.Value(1)
+      scale : new Animated.Value(1),
+      flipX : new Animated.Value(1),
+      flipY : new Animated.Value(1)
+      
     }
     const url = require('./meme.jpg')
     const image = Image.resolveAssetSource(url)
@@ -51,6 +54,8 @@ class App extends Component {
     this.lastTransCX = 0
     this.currentRotation = 0
     this.currentScale = 1
+    this.currentFlipX = 1
+    this.currentFlipY = 1
     this.rotate = this.state.rotate.interpolate({
       inputRange: [0, 360],
       outputRange: ['0deg', '360deg']
@@ -60,6 +65,8 @@ class App extends Component {
     this.handleCropState = this.handleCropState.bind(this)
     this.handleButtonRotate = this.handleButtonRotate.bind(this)
     this.handleButtonScale = this.handleButtonScale.bind(this)
+    this.handleButtonFlipX = this.handleButtonFlipX.bind(this)
+    this.handleButtonFlipY = this.handleButtonFlipY.bind(this)
   }
 
   handleCropGesture({nativeEvent }){
@@ -121,7 +128,9 @@ class App extends Component {
                 format: 0,
                 width: -1,
                 height: -1,
-                rotate : this.currentRotation
+                rotate : this.currentRotation,
+                flipVertically: this.currentFlipY == -1 ? true : false,
+                flipHorizontally: this.currentFlipX == -1 ? true : false
               }
 
               Cropper.makeCropStatic(data).then(res => {
@@ -131,6 +140,27 @@ class App extends Component {
           }
       }
   }
+  handleButtonFlipX({nativeEvent}){
+    if(nativeEvent.state == State.ACTIVE){
+       if (this.currentFlipX == 1) {
+           this.currentFlipX = -1
+       }else{
+           this.currentFlipX = 1
+       }
+       this.state.flipX.setValue(this.currentFlipX)
+    }
+ }
+
+ handleButtonFlipY({nativeEvent}){
+  if(nativeEvent.state == State.ACTIVE){
+     if (this.currentFlipY == 1) {
+         this.currentFlipY = -1
+     }else{
+         this.currentFlipY = 1
+     }
+     this.state.flipY.setValue(this.currentFlipY)
+  }
+}
 
   handleButtonScale({nativeEvent}){
     if(nativeEvent.state == State.ACTIVE){
@@ -167,7 +197,7 @@ class App extends Component {
          <View style={{flex:1}} >
 
               <View style={styles.container}>
-                  <Animated.View style={{...styles.image, transform: [ {rotate: this.rotate },{ scale: this.state.scale }]}}>
+                  <Animated.View style={{...styles.image, transform: [ {rotate: this.rotate },{ scale: this.state.scale },{ scaleX: this.state.flipX}, { scaleY: this.state.flipY }]}}>
                       <Image style={styles.image} source={require("./meme.jpg")} resizeMode={'contain'} />
                   </Animated.View>
 
@@ -194,6 +224,16 @@ class App extends Component {
                     <TapGestureHandler onHandlerStateChange={this.handleButtonScale}>
                       <View style={styles.button}>
                         <Text style={styles.text}>Scale</Text>
+                      </View>
+                    </TapGestureHandler>
+                    <TapGestureHandler onHandlerStateChange={this.handleButtonFlipX}>
+                      <View style={styles.button}>
+                        <Text style={styles.text}>flipX</Text>
+                      </View>
+                    </TapGestureHandler>
+                    <TapGestureHandler onHandlerStateChange={this.handleButtonFlipY}>
+                      <View style={styles.button}>
+                        <Text style={styles.text}>flipY</Text>
                       </View>
                     </TapGestureHandler>
               </View>
@@ -238,7 +278,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 50,
     width:'100%',
-    marginTop: 20,
+    marginTop: 10,
     justifyContent:'center'
   },
   image: {
@@ -268,7 +308,8 @@ const styles = StyleSheet.create({
     height:50,
     justifyContent:'center',
     alignItems: 'center',
-    marginHorizontal: 5
+    marginHorizontal: 5,
+    marginTop: 5
 
   }
   
