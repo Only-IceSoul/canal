@@ -94,7 +94,7 @@ class App extends Component {
         if(this.medias.length > 0){
           this.makeUnique()
       }else{
-            PhotoKit.fetchAll().then(res => {
+            PhotoKit.fetch(PhotoKit.all).then(res => {
                 if (res != null){
                     this.albums = res[0]
                     this.medias  = res[1]
