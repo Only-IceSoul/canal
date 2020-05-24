@@ -158,6 +158,7 @@ class App extends Component {
           
           ?
      
+      //flat list memory issue?
           <FlatList style={styles.list}
                     data={this.state.items}
                     numColumns={3}
