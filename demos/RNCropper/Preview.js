@@ -3,10 +3,10 @@ import {
   StyleSheet,
   View,
   Text,
-  Dimensions,
-  Image
+  Dimensions
 } from 'react-native';
 import { TapGestureHandler, State } from 'react-native-gesture-handler';
+import { Image } from 'react-native-jjkit'
 
 const ch = Dimensions.get("window").height * 0.8
 const cw = Dimensions.get("window").width 
@@ -14,7 +14,7 @@ const cw = Dimensions.get("window").width
 const preview = (props)=> (
 
     <View style={props.style}>
-        <Image style={styles.image} source={{ uri: `data:image/jpeg;base64,${props.image}`}} resizeMode={'contain'}/>
+        <Image style={styles.image} data={{ url:`base64,${props.image}` , asGif: props.isGif , width: -1, height: -1,cache:true}} scaleType={1}/>
 
         <TapGestureHandler onHandlerStateChange={({nativeEvent}) => {
             if(nativeEvent.state == State.ACTIVE){
@@ -32,9 +32,8 @@ const preview = (props)=> (
 
 const styles = StyleSheet.create({
     image: {
-      width: cw,
-      height: ch,
-      backgroundColor : 'red'
+      width: '100%',
+      height: '80%',
     },
     button : {
         backgroundColor: '#7936d9',
