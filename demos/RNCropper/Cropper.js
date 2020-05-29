@@ -6,6 +6,7 @@
  * @flow strict-local
  */
 
+
 import React, { Component } from 'react';
 import {
   SafeAreaView,
@@ -27,6 +28,7 @@ import Preview from './Preview.js'
 const ch = Dimensions.get("window").height * 0.8
 const cw = Dimensions.get("window").width 
 const hs = Dimensions.get("window").height
+const bw = 3
 
 class App extends Component {
 
@@ -45,7 +47,7 @@ class App extends Component {
     const url = require('./meme.jpg')
     const image = Image.resolveAssetSource(url)
     this.imageRect = Rect.fitCenterRect(image.width,image.height,cw,ch)
-    this.cropRect = Rect.inset(Rect.centerRect(100,100,cw,ch),1,1)
+    this.cropRect = Rect.inset(Rect.centerRect(100,100,cw,ch),bw,bw)
 
     //crop
     this.transCY = 0
@@ -119,21 +121,23 @@ class App extends Component {
     
           if (Rect.contains(scaled,this.cropRect)){    
               let data = {
-                image : image.uri,
+                image : `static;${image.uri}`,
                 rect: scaled,
-                cw: cw,
-                ch: ch,
-                crop: this.cropRect,
-                quality: 1,
-                format: 0,
-                width: -1,
-                height: -1,
                 rotate : this.currentRotation,
                 flipVertically: this.currentFlipY == -1 ? true : false,
-                flipHorizontally: this.currentFlipX == -1 ? true : false
+                flipHorizontally: this.currentFlipX == -1 ? true : false,
+                crop: this.cropRect,
+                output: {
+                    quality: 1,
+                    format: 0,
+                    width: -1,
+                    height: -1
+                }
+               
+                
               }
 
-              Cropper.makeCropStatic(data).then(res => {
+              Cropper.makeCrop(data).then(res => {
                 this.setState({ preview: res  })
               })
 
@@ -262,7 +266,7 @@ const styles = StyleSheet.create({
     position: 'absolute' ,
     backgroundColor: '#ccc',
     width:'100%', 
-    height: '100%' ,
+    height: hs ,
      left: 0,
       top: 0
   },
@@ -290,7 +294,7 @@ const styles = StyleSheet.create({
     height: ch
   },
   crop:{
-    borderWidth: 1,
+    borderWidth: bw,
     borderRadius: 4,
     borderColor: 'red',
     flex:1
