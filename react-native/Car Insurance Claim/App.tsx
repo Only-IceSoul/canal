@@ -1,13 +1,12 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Dimensions, StyleSheet, View,Image as ImageReact, Text as TextReact } from 'react-native';
+import { Dimensions, StyleSheet, View,Image as ImageReact, Text as TextReact, Platform } from 'react-native';
 import {ClipPathView} from 'react-native-clippathview';
-import { HandlerStateChangeEvent, State, TapGestureHandler, TapGestureHandlerEventPayload } from 'react-native-gesture-handler';
-import { Color } from 'react-native-painter';
+import { GestureHandlerRootView, HandlerStateChangeEvent, State, TapGestureHandler, TapGestureHandlerEventPayload } from 'react-native-gesture-handler';
 import { BlurRootView, BlurView } from 'react-native-realtimeblurview';
 import Animated, { Easing, runOnJS , useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 
-import { DrawableView } from 'react-native-drawableview';
+import { DrawableView,Color } from 'react-native-drawableview';
 import Fish from './icons/Fish';
 import Shower from './icons/Shower';
 import Wheel from './icons/Wheel';
@@ -29,7 +28,7 @@ var roundedRectData = function (w:number, h:number, tlr:number, trr:number, brr:
     + ' Z';
 };
 
-const AnimatedBlurView = Animated.createAnimatedComponent(BlurView)
+
 
 const WindowWidth =   Dimensions.get('window').width
 const windowHeight =  Dimensions.get('window').height
@@ -91,17 +90,18 @@ const App = () => {
 
   const iconsEndPosition = WindowWidth * 0.15
   const iconsStartPosition = WindowWidth * 0.5
-  const sharedHeight = useSharedValue(0)
-  const sharedTransY = useSharedValue(0)
+  const sharedTransY = useSharedValue(-heightCar)
   const sharedIcon = useSharedValue(0)
   const sharedIconOpacity = useSharedValue(0)
   const sharedMarker = useSharedValue(0)
   const animatedStyleBlur = useAnimatedStyle(()=>{
+  
     return{
-      height: `${sharedHeight.value * 100}%`,
       transform:[{translateY:sharedTransY.value}]
     }
   })
+
+
 
   const animatedStyleIcons = useAnimatedStyle(()=>{
     return {
@@ -119,7 +119,10 @@ const App = () => {
 
 
   useEffect(()=>{
-    sharedHeight.value =  withDelay(1000,withTiming(1,{duration:250,easing:Easing.linear},(finish)=>{
+    if(Platform.OS === 'web'){
+      document.body.style.overflowX = "hidden"
+    }
+    sharedTransY.value =  withDelay(1000,withTiming(0,{duration:250,easing:Easing.linear},(f)=>{
       sharedTransY.value = withDelay(1000, withTiming(heightCar,{duration:250,easing:Easing.linear},(finish)=>{
         sharedIconOpacity.value = withDelay(2000,withTiming(1,{duration:1000,easing:Easing.linear}))
         sharedIcon.value = withDelay(2000,withTiming(1,{duration:1000,easing:Easing.out(Easing.exp)}))
@@ -130,12 +133,13 @@ const App = () => {
          }))
       }))
     }))
-
+ 
     
   },[])
 
 
     return (
+      <GestureHandlerRootView style={{flex:1}}>
         <View style={styles.container} >
        
           <BlurRootView style={styles.blurRoot} name="myNode" >
@@ -146,12 +150,14 @@ const App = () => {
                   <ImageReact  style={{width:'90%',height:'100%'}}
                     source={require('./car.png')}  resizeMode="contain" />
                    {isAnimating &&
-                      <AnimatedBlurView style={[styles.blurCar,animatedStyleBlur]}
+                   <Animated.View style={[styles.blurCar,animatedStyleBlur]}>
+                      <BlurView style={[{width:'100%',height:'100%'}]}
                         blurNode="myNode"
                         radius={11}
                       >
                         <View style={{width:'100%',height:'100%',backgroundColor:'rgba(255,255,255,0.2)'}}/>
-                        </AnimatedBlurView>
+                        </BlurView>
+                      </Animated.View>
                     }  
                </Animated.View>
           </TapGestureHandler>
@@ -166,8 +172,8 @@ const App = () => {
 
                   <Animated.View style={[styles.options,animatedStyleIcons]}>
                        <DrawableView style={StyleSheet.absoluteFillObject} 
-                          d={roundedRectData(styles.options.width * 0.95,styles.options.height * 0.9,10,10,10,10,styles.options.width * 0.025,styles.options.height*0.05)}
-                          fill={0}
+                          d={ roundedRectData(WindowWidth* 0.95,windowHeight * 0.13 * 0.9,10,10,10,10,WindowWidth * 0.025,windowHeight * 0.13*0.05)}
+                          fill={Color('transparent')}
                           stroke={colorGray}
                           strokeOpacity={0.3}
                          /> 
@@ -216,7 +222,7 @@ const App = () => {
 
           {isAnimating &&
               <TapGestureHandler onGestureEvent={(e:any)=>{
-                e.stopPropagation();
+              
               }}>
                      <View style={StyleSheet.absoluteFillObject}  />
               </TapGestureHandler>
@@ -225,6 +231,7 @@ const App = () => {
         
 
         </View>
+        </GestureHandlerRootView>
     )
   }
   
@@ -245,13 +252,13 @@ const styles = StyleSheet.create({
   carImage:{
     width: widthCar,
     height:heightCar,
-    overflow:'visible',
+    overflow:'hidden',
     justifyContent:'center',
     alignItems:'center'
   
   },
   blurCar:{
-    height:0,
+    height:'100%',
     width:'100%',
     position:'absolute',
     left:0,
@@ -288,7 +295,7 @@ const styles = StyleSheet.create({
   },
   blurDamageBorder:{
       ...StyleSheet.absoluteFillObject,
-      borderRadius: 8,
+      borderRadius: 18,
       borderWidth:0.3,
       borderColor:'gray',
       display:'flex',
@@ -319,6 +326,7 @@ const styles = StyleSheet.create({
   }
 
 });
+
 
 
 export default App
