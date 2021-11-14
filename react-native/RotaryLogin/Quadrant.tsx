@@ -32,16 +32,22 @@ export const DIGITS = new Array(11)
 const colorWhite = Color('white')
 const colorBlack = Color('black')
 const colorRed = Color('red')
-const Quadrant = () => {
+const Quadrant = (props:any) => {
+
+  const { align , aspect } = props
   return (
     <>
      
-      <Circle fill={colorBlack} cx={center.x} cy={center.y} r={RADIUS} />
+      <Circle  painterKey={`circleQmain`} align={align} aspect={aspect}  fill={colorBlack} cx={center.x} cy={center.y} r={RADIUS} />
       {DIGITS.map(({ x, y }, i) =>
         i === 10 ? (
-          <Circle fill={colorWhite} cx={x} cy={y} r={10} key={i} />
+          <Circle    painterKey={`circleQ${i}`}
+          align={align} aspect={aspect}
+           fill={colorWhite} cx={x} cy={y} r={10} key={i} />
         ) : (
           <Text
+          painterKey={`textQ${i}`}
+          align={align} aspect={aspect}
           text={`${(i + 1) % 10}`}
             key={i}
             fontSize={24}
@@ -49,6 +55,7 @@ const Quadrant = () => {
             x={x}
             y={y + 2}
             horizontalOffset={-0.5}
+            textAnchor="middle"
             baseline="middle"
             fontStyle="bold"
          />

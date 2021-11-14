@@ -1,5 +1,5 @@
 import React from "react";
-import { Dimensions } from "react-native";
+import { Dimensions, Platform } from "react-native";
 import Animated, {
   Easing,
   useAnimatedProps,
@@ -7,17 +7,21 @@ import Animated, {
   useSharedValue,
   withTiming,
   withDelay,
+  runOnJS,
 } from "react-native-reanimated";
 import { Circle, Color } from "react-native-painter";
 
 
 import { center, RADIUS } from "./Quadrant";
 
+import AnimatedPainter from "./ReanimatedPainter";
+
+
 const { width } = Dimensions.get("window");
 const r = 8;
 const cx = width - (center.x - RADIUS);
 const cy = center.y - RADIUS - 50;
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
 
 const colorBlack = Color('black')
 const colorWhite = Color('white')
@@ -28,20 +32,42 @@ interface Digit {
   i: number;
 }
 
-const Digit = ({ tries, i }: Digit) => {
+const Digit = ({ tries, i ,...others}: Digit) => {
+  
   const transition = useSharedValue(0);
   const endTransition = useSharedValue(0);
   const origin = { x: cx - i * 3 * r, y: cy };
-  const animatedProps = useAnimatedProps(() => ({
+  const [animatedProps,setAnimatedProps] = AnimatedPainter.getAnimatedProps<any>({},useAnimatedProps(() => ({
     opacity: transition.value,
       sc: transition.value , 
      scOx: origin.x , 
      scOy:origin.y 
-  }));
-  const animatedProps2 = useAnimatedProps(() => ({
+  }))
+  )
+  const [animatedProps2,setAnimatedProps2] = AnimatedPainter.getAnimatedProps<any>({} ,useAnimatedProps(() => ({
     opacity: endTransition.value
   
-  }));
+  }))
+  )
+
+  if(Platform.OS === "web"){
+    useAnimatedReaction(()=> transition.value ,(v)=>{
+         runOnJS(setAnimatedProps!)({
+          opacity: v,
+            sc: v , 
+           scOx: origin.x , 
+           scOy:origin.y 
+        })
+    },[])
+    useAnimatedReaction(()=> endTransition.value ,(v)=>{
+      runOnJS(setAnimatedProps2!)({
+       opacity: v,
+     })
+ },[])
+
+  }
+
+
   useAnimatedReaction(
     () => tries.value,
     (l) => {
@@ -79,12 +105,12 @@ const Digit = ({ tries, i }: Digit) => {
         );
       }
     
-    }
+    },[]
   );
 
   return (
     <>
-      <Circle
+      <Circle {...others}
         cx={origin.x}
         cy={origin.y}
         r={r}
@@ -92,14 +118,16 @@ const Digit = ({ tries, i }: Digit) => {
         stroke={colorBlack}
         strokeWidth={4}
       />
-      <AnimatedCircle
+      <AnimatedPainter.Circle
+      {...others}
         cx={origin.x}
         cy={origin.y}
         r={r - 2}
         fill={colorWhite}
         animatedProps={animatedProps}
       />
-      <AnimatedCircle
+      <AnimatedPainter.Circle
+      {...others}
         cx={origin.x}
         cy={origin.y}
         r={r - 2}
@@ -114,11 +142,12 @@ interface StatusProps {
   tries: Animated.SharedValue<number>;
 }
 
-const Status = ({ tries }: StatusProps) => {
+const Status = ({ tries,...others }: StatusProps) => {
+
   return (
     <>
       {new Array(4).fill(0).map((_, i) => (
-        <Digit key={i} i={i} tries={tries} />
+        <Digit {...others} key={i} i={i} tries={tries} />
       ))}
     </>
   );

@@ -5,12 +5,12 @@ import { RADIUS, center } from "./Quadrant";
 
 const fontSize = 26;
 const colorBlack = Color('black')
-const Title = () => {
+const Title = (props:any) => {
+  const { align , aspect } = props
   return (
     <G
-      style={
-        {transform: [{ translateY: -RADIUS - 100 }]}
-      }
+    align={align} aspect={aspect}
+    transY={ -RADIUS - 100}
     >
       <Text
         text="ENTER"
