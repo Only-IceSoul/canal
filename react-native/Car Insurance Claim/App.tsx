@@ -4,7 +4,7 @@ import { Dimensions, StyleSheet, View,Image as ImageReact, Text as TextReact, Pl
 import {ClipPathView} from 'react-native-clippathview';
 import { GestureHandlerRootView, HandlerStateChangeEvent, State, TapGestureHandler, TapGestureHandlerEventPayload } from 'react-native-gesture-handler';
 import { BlurRootView, BlurView } from 'react-native-realtimeblurview';
-import Animated, { Easing, runOnJS , useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, runOnJS , useAnimatedReaction, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 
 import { DrawableView,Color } from 'react-native-drawableview';
 import Fish from './icons/Fish';
@@ -12,6 +12,7 @@ import Shower from './icons/Shower';
 import Wheel from './icons/Wheel';
 import Car from './icons/Car';
 import Marker from './icons/Marker';
+import {getAnimatedStyle} from './reanimated';
 
 const colorGray = Color('gray')
 const colorWhite = Color('white')
@@ -45,20 +46,20 @@ const App = () => {
   const [damageDetail,setDamageDetail] = useState(false)
   const isScalingCar = useRef(false)
 
+  const iconsEndPosition = WindowWidth * 0.15
+  const iconsStartPosition = WindowWidth * 0.5
+  const sharedTransY = useSharedValue(-heightCar)
+  const sharedIcon = useSharedValue(0)
+  const sharedIconOpacity = useSharedValue(0)
+  const sharedMarker = useSharedValue(0)
+  const sharedScale = useSharedValue(0)
+
   const handleTapImage = (event: HandlerStateChangeEvent<TapGestureHandlerEventPayload>) => {
       if(event.nativeEvent.state == State.ACTIVE){
           animateImageScale()
       }
   }
   
-  const sharedScale = useSharedValue(0)
-
-  const AnimatedScale = useAnimatedStyle(()=>{
-    return{
-      transform:[{ translateX:widthCar* 0.5 }, {scale:1 + (sharedScale.value * 0.5) },{ translateX:-widthCar* 0.5 }]
-    }
-  })
-
   const setIsScalingCar = (value:boolean)=>{
     isScalingCar.current = value;
   }
@@ -88,34 +89,68 @@ const App = () => {
   }
 
 
-  const iconsEndPosition = WindowWidth * 0.15
-  const iconsStartPosition = WindowWidth * 0.5
-  const sharedTransY = useSharedValue(-heightCar)
-  const sharedIcon = useSharedValue(0)
-  const sharedIconOpacity = useSharedValue(0)
-  const sharedMarker = useSharedValue(0)
-  const animatedStyleBlur = useAnimatedStyle(()=>{
+  const [animatedStyleBlur,setAnimatedStyleBlur] = getAnimatedStyle({}, useAnimatedStyle(()=>{
   
     return{
       transform:[{translateY:sharedTransY.value}]
     }
-  })
+  }))
 
 
+  const [AnimatedScale,setAnimatedScale] = getAnimatedStyle(
+    {
+    }
+    ,useAnimatedStyle(()=>{
+    return{
+      transform:[{ translateX:widthCar* 0.5 }, {scale:1 + (sharedScale.value * 0.5) },{ translateX:-widthCar* 0.5 }]
+    }
+  }))
 
-  const animatedStyleIcons = useAnimatedStyle(()=>{
+  const [animatedStyleIcons,setAnimatedStyleIcons] = getAnimatedStyle({},useAnimatedStyle(()=>{
     return {
       transform:[{translateX: iconsStartPosition - ( sharedIcon.value * (iconsStartPosition - iconsEndPosition) )}],
       opacity: sharedIconOpacity.value
     }
-  })
+  }))
 
-  const animatedStyleMarker = useAnimatedStyle(()=>{
+  const [animatedStyleMarker,setAnimatedStyleMarker] = getAnimatedStyle({},useAnimatedStyle(()=>{
     return {
       opacity: sharedMarker.value
     }
   })
+)
 
+
+  if(Platform.OS === 'web'){
+    useAnimatedReaction(()=> sharedTransY.value ,(v)=>{
+        runOnJS(setAnimatedStyleBlur!)({
+          transform:[{translateY:v}]
+        })
+    },[])
+    useAnimatedReaction(()=> sharedScale.value ,(v)=>{
+      runOnJS(setAnimatedScale!)({
+        transform:[{ translateX:widthCar* 0.5 }, {scale:1 + (v * 0.5) },{ translateX:-widthCar* 0.5 }]
+      })
+  },[])
+
+  useAnimatedReaction(()=>[sharedIcon.value,sharedIconOpacity.value],(v)=>{
+      runOnJS(setAnimatedStyleIcons!)({
+        transform:[{translateX: iconsStartPosition - ( v[0] * (iconsStartPosition - iconsEndPosition) )}],
+        opacity: v[1]
+      })
+  },[])
+  useAnimatedReaction(()=> sharedMarker.value ,(v)=>{
+    runOnJS(setAnimatedStyleMarker!)({
+      opacity: v
+    })
+},[])
+
+  }
+
+
+
+
+ 
 
 
   useEffect(()=>{
@@ -192,6 +227,7 @@ const App = () => {
                    
                      <View style={styles.blurDamage}>
                           <ClipPathView style={{flex:1}}
+                             svgKey="mykey"
                             d={roundedRectData(100,100,10,10,10,10,0,0)}
                             viewBox={[0,0,100,100]}
                             align="none"
