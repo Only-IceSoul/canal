@@ -37,6 +37,7 @@ const Details = (props :any) => {
           left:0,top:(windowHeight - (itemHeight/2)) / 2,
              }}  >   
 
+                     {/* aspect ratio , Using transform to avoid problems */}
                     <DrawableImage 
                  style={{width:windowWidth,height:itemHeight/2,transform:[{scale:1.4}]}}
                   source={{uri:props.item !== -100 ? `static;${Image.resolveAssetSource(route.params.item).uri}` : "" 

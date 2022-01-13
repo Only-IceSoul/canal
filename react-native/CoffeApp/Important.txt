@@ -1,0 +1,5 @@
+Created using expo and recyclerlistview.
+
+This maybe is slow with npx react native init.
+
+I recommend you look for the version of the patreon
